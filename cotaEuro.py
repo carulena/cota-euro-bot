@@ -18,7 +18,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         callback_auto_message,
         interval=30,
         first=0,
-        context=chat_id,
+        data=chat_id,
         name=str(chat_id)
     )
 
