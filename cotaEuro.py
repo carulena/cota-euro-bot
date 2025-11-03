@@ -7,6 +7,10 @@ import pytz
 from datetime import datetime
 from flask import Flask
 
+app_flask = Flask(__name__)
+
+app_flask.run(host="0.0.0.0", port=2700)
+
 TOKEN = os.environ.get("COTA_EURO_TELEGRAM_TOKEN")
 
 API_TOKEN  = os.environ.get("API_TOKEN")
@@ -92,10 +96,6 @@ def main():
             raise
 
 if __name__ == "__main__":
-    app_flask = Flask(__name__)
- 
-
-    app_flask.run(host="0.0.0.0", port=2700)
     main()
     
     
