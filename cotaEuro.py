@@ -45,8 +45,8 @@ async def stop(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("Mensagens automáticas paradas.")
 
 def main():
-    asyncio.run(app.bot.delete_webhook(drop_pending_updates=True))
     app = ApplicationBuilder().token(TOKEN).build()
+    asyncio.run(app.bot.delete_webhook(drop_pending_updates=True))
 
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("stop", stop))
