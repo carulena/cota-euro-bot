@@ -51,12 +51,13 @@ async def stop(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await update.message.reply_text("Mensagens automáticas paradas.")
 
-def main():
+async def main():
     app = ApplicationBuilder().token(TOKEN).build()
-    # asyncio.run(app.bot.delete_webhook(drop_pending_updates=True))
-
+    
+    await app.bot.delete_webhook(drop_pending_updates=True)
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("stop", stop))
+    
     print("Bot rodando no Render...")
     try:
         app.run_polling()
@@ -67,4 +68,4 @@ def main():
             raise
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
