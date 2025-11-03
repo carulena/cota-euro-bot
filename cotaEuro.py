@@ -13,12 +13,13 @@ async def cotacao_euro():
     headers = {}
 
     response = requests.request("GET", url, headers=headers, data=payload)
-    
+    print(response.text)    
     resposta = response.json()['EURBRL']
     cria_retorno = f"Agora {resposta['create_date']} \n  O Euro está R${resposta['ask']} \n"
     cria_retorno += f"Hoje, o Euro esteve entre R${resposta['low']} e R${resposta['high']}"
 
     return cria_retorno
+
 async def callback_auto_message(context: ContextTypes.DEFAULT_TYPE):
     job = context.job
     await context.bot.send_message(chat_id=job.data, text=cotacao_euro)
