@@ -9,6 +9,7 @@ TOKEN = os.environ.get("COTA_EURO_TELEGRAM_TOKEN")
 
 API_TOKEN  = os.environ.get("API_TOKEN")
 
+euro_atual = 0
 def esta_horario_comercial():
     brasil_tz = pytz.timezone("America/Sao_Paulo")
     agora = datetime.now(brasil_tz)
@@ -17,18 +18,23 @@ def esta_horario_comercial():
     return dia_util and horario_comercial
 
 async def cotacao_euro():
-    url = f"http://economia.awesomeapi.com.br/json/last/EUR-BRL?token={API_TOKEN}"
+    url = f"https://economia.awesomeapi.com.br/json/last/EUR-BRL"
     payload = {}
     headers = {}
-
     response = requests.request("GET", url, headers=headers, data=payload)
-
-    resposta = response.json()['EURBRL']
-    cria_retorno = f"Agora {resposta['create_date']} \n  O Euro está R${resposta['ask']} \n"
-    cria_retorno += f"Hoje, o Euro esteve entre R${resposta['low']} e R${resposta['high']}"
-
-    return cria_retorno
-
+    if(response.status_code == 200):
+        resposta = response.json()['EURBRL']
+        cria_retorno = ''
+        if euro_atual != 0 and euro_atual < float(resposta['ask']):
+            cria_retorno = f'O EURO SUBIU 😓 \n anterior estava R${euro_atual}'
+        elif euro_atual != 0 and euro_atual > float(resposta['ask']):
+            cria_retorno = f'O EURO CAIU 😁 \n anterior estava R${euro_atual}'
+        euro_atual = float(resposta['ask'])
+        cria_retorno += f"Agora {resposta['create_date']} \n  O Euro está R${resposta['ask']} \n"
+        cria_retorno += f"Hoje, o Euro esteve entre R${resposta['low']} e R${resposta['high']}"
+        return cria_retorno
+    else:
+        return f"API de cotação retornou {response.status_code} - {response.content}, por favor verifique"
 async def callback_auto_message(context: ContextTypes.DEFAULT_TYPE):
     job = context.job
     horario_comercial = esta_horario_comercial()
@@ -44,13 +50,13 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     context.job_queue.run_repeating(
         callback_auto_message,
-        interval=120,
+        interval=30,
         first=0,
         data=chat_id,
         name=str(chat_id)
     )
 
-    await update.message.reply_text("Bot iniciado! Enviarei mensagens a cada 2 minutos.")
+    await update.message.reply_text("Bot iniciado! Enviarei mensagens a cada 30 segundos. (em dias e horários comerciais)")
 
 async def stop(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
