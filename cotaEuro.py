@@ -18,23 +18,26 @@ def esta_horario_comercial():
     return dia_util and horario_comercial
 
 async def cotacao_euro():
-    url = f"https://economia.awesomeapi.com.br/json/last/EUR-BRL"
+    url = "https://economia.awesomeapi.com.br/json/last/EUR-BRL"
     payload = {}
     headers = {}
     response = requests.request("GET", url, headers=headers, data=payload)
-    if(response.status_code == 200):
+    
+    try:
         resposta = response.json()['EURBRL']
         cria_retorno = ''
+        
         if euro_atual != 0 and euro_atual < float(resposta['ask']):
-            cria_retorno = f'O EURO SUBIU 😓 \n anterior estava R${euro_atual}'
+            cria_retorno = f'O EURO SUBIU 😓 \n anterior estava R${euro_atual}\n'
         elif euro_atual != 0 and euro_atual > float(resposta['ask']):
-            cria_retorno = f'O EURO CAIU 😁 \n anterior estava R${euro_atual}'
+            cria_retorno = f'O EURO CAIU 😁 \n anterior estava R${euro_atual}\n'
+            
         euro_atual = float(resposta['ask'])
-        cria_retorno += f"Agora {resposta['create_date']} \n  O Euro está R${resposta['ask']} \n"
-        cria_retorno += f"Hoje, o Euro esteve entre R${resposta['low']} e R${resposta['high']}"
+        cria_retorno += f"{resposta['create_date']} - O Euro está R${resposta['ask']}"
         return cria_retorno
-    else:
+    except: 
         return f"API de cotação retornou {response.status_code} - {response.content}, por favor verifique"
+    
 async def callback_auto_message(context: ContextTypes.DEFAULT_TYPE):
     job = context.job
     horario_comercial = esta_horario_comercial()
