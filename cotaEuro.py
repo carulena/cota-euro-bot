@@ -6,7 +6,7 @@ TOKEN = os.environ.get("COTA_EURO_TELEGRAM_TOKEN")
 
 async def callback_auto_message(context: ContextTypes.DEFAULT_TYPE):
     job = context.job
-    await context.bot.send_message(chat_id=job.context, text="Mensagem automática 🔁")
+    await context.bot.send_message(chat_id=job.data, text="Mensagem automática 🔁")
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
