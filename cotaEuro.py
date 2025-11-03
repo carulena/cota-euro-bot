@@ -22,7 +22,7 @@ def esta_horario_comercial():
 async def cotacao_euro():
     url = "https://economia.awesomeapi.com.br/json/last/EUR-BRL"
     payload = {}
-    headers = {}
+    headers = {"User-Agent": "Mozilla/5.0 (TelegramBot/1.0)"}
     response = requests.request("GET", url, headers=headers, data=payload)
     
     try:
