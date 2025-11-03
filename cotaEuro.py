@@ -6,10 +6,11 @@ import requests
 import pytz 
 from datetime import datetime
 from flask import Flask
+from threading import Thread
 
-app_flask = Flask(__name__)
+# app_flask = Flask(__name__)
 
-app_flask.run(host="0.0.0.0", port=2700)
+# app_flask.run(host="0.0.0.0", port=2700)
 
 TOKEN = os.environ.get("COTA_EURO_TELEGRAM_TOKEN")
 
@@ -95,10 +96,17 @@ def main():
         else:
             raise
 
+    
+def run_flask():
+    app = Flask(__name__)
+
+    @app.route("/")
+    def home():
+        return "Bot rodando no Render!"
+
+    app.run(host="0.0.0.0", port=2799, debug=False, use_reloader=False)
+
+
 if __name__ == "__main__":
+    Thread(target=run_flask, daemon=True).start()
     main()
-    
-    
-@app_flask.route("/")
-def home():
-     return "Bot do Telegram está rodando no Render!"
