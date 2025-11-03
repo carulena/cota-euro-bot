@@ -3,9 +3,18 @@ import os
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 import requests
+import pytz 
+from datetime import datetime
 TOKEN = os.environ.get("COTA_EURO_TELEGRAM_TOKEN")
 
 API_TOKEN  = os.environ.get("API_TOKEN")
+
+def esta_horario_comercial():
+    brasil_tz = pytz.timezone("America/Sao_Paulo")
+    agora = datetime.now(brasil_tz)
+    dia_util = agora.weekday() < 5
+    horario_comercial = 8 <= agora.hour < 18
+    return dia_util and horario_comercial
 
 async def cotacao_euro():
     url = f"http://economia.awesomeapi.com.br/json/last/EUR-BRL?token={API_TOKEN}"
@@ -13,7 +22,7 @@ async def cotacao_euro():
     headers = {}
 
     response = requests.request("GET", url, headers=headers, data=payload)
-    print(response.text)    
+
     resposta = response.json()['EURBRL']
     cria_retorno = f"Agora {resposta['create_date']} \n  O Euro está R${resposta['ask']} \n"
     cria_retorno += f"Hoje, o Euro esteve entre R${resposta['low']} e R${resposta['high']}"
@@ -22,7 +31,10 @@ async def cotacao_euro():
 
 async def callback_auto_message(context: ContextTypes.DEFAULT_TYPE):
     job = context.job
-    await context.bot.send_message(chat_id=job.data, text=cotacao_euro)
+    horario_comercial = esta_horario_comercial()
+    if(horario_comercial):
+        mensagem = await cotacao_euro()
+        await context.bot.send_message(chat_id=job.data, text=mensagem)
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
