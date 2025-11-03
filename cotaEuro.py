@@ -5,16 +5,23 @@ from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 import requests
 TOKEN = os.environ.get("COTA_EURO_TELEGRAM_TOKEN")
 
+API_TOKEN  = os.environ.get("API_TOKEN")
+
 async def cotacao_euro():
-    url = "http://economia.awesomeapi.com.br/json/last/EUR-BRL"
+    url = f"http://economia.awesomeapi.com.br/json/last/EUR-BRL?token={API_TOKEN}"
     payload = {}
     headers = {}
 
     response = requests.request("GET", url, headers=headers, data=payload)
-    return response.json['ask']
+    
+    resposta = response.json()['EURBRL']
+    cria_retorno = f"Agora {resposta['create_date']} \n  O Euro está R${resposta['ask']} \n"
+    cria_retorno += f"Hoje, o Euro esteve entre R${resposta['low']} e R${resposta['high']}"
+
+    return cria_retorno
 async def callback_auto_message(context: ContextTypes.DEFAULT_TYPE):
     job = context.job
-    await context.bot.send_message(chat_id=job.data, text=cotacao_euro())
+    await context.bot.send_message(chat_id=job.data, text=cotacao_euro)
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
@@ -24,13 +31,13 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     context.job_queue.run_repeating(
         callback_auto_message,
-        interval=60,
+        interval=120,
         first=0,
         data=chat_id,
         name=str(chat_id)
     )
 
-    await update.message.reply_text("Bot iniciado! Enviarei mensagens a cada 1 minuto.")
+    await update.message.reply_text("Bot iniciado! Enviarei mensagens a cada 2 minutos.")
 
 async def stop(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
