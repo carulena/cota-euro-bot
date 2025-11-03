@@ -24,13 +24,13 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     context.job_queue.run_repeating(
         callback_auto_message,
-        interval=30,
+        interval=60,
         first=0,
         data=chat_id,
         name=str(chat_id)
     )
 
-    await update.message.reply_text("Bot iniciado! Enviarei mensagens a cada 30 segundos.")
+    await update.message.reply_text("Bot iniciado! Enviarei mensagens a cada 1 minuto.")
 
 async def stop(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
@@ -45,13 +45,19 @@ async def stop(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("Mensagens automáticas paradas.")
 
 def main():
-    app = ApplicationBuilder().token(TOKEN).build()
     asyncio.run(app.bot.delete_webhook(drop_pending_updates=True))
+    app = ApplicationBuilder().token(TOKEN).build()
 
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("stop", stop))
     print("Bot rodando no Render...")
-    app.run_polling()
+    try:
+        app.run_polling()
+    except RuntimeError as e:
+        if "Event loop is closed" in str(e):
+            print("Loop encerrado pelo sistema (Render reiniciou o container). Ignorando...")
+        else:
+            raise
 
 if __name__ == "__main__":
     main()
