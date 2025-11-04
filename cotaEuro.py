@@ -30,7 +30,7 @@ async def cotacao_euro():
         responseJson = response.json()
         valor = responseJson['rates']['BRL']
         data = datetime.strptime(responseJson['date'], '%Y-%m-%dT%H:%M:%S.%fZ')
-        data_brasil = data.astimezone(ZoneInfo("America/Sao_Paulo"))
+        data_brasil = data.astimezone(ZoneInfo("America/Sao_Paulo")).strftime('%d/%m/%y - %H:%M')
         # cria_retorno = ''
         
         # if euro_atual != 0 and euro_atual < float(valor):
