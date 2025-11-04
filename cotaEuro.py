@@ -12,7 +12,6 @@ TOKEN = os.environ.get("COTA_EURO_TELEGRAM_TOKEN")
 
 API_TOKEN  = os.environ.get("API_TOKEN")
 
-euro_atual = 0
 def esta_horario_comercial():
     brasil_tz = pytz.timezone("America/Sao_Paulo")
     agora = datetime.now(brasil_tz)
@@ -30,15 +29,15 @@ async def cotacao_euro():
         responseJson = response.json()
         valor = responseJson['rates']['BRL']
         data = responseJson['date']
-        cria_retorno = ''
+        # cria_retorno = ''
         
-        if euro_atual != 0 and euro_atual < float(valor):
-            cria_retorno = f'O EURO SUBIU 😓 \n anterior estava R${euro_atual}\n'
-        elif euro_atual != 0 and euro_atual > float(valor):
-            cria_retorno = f'O EURO CAIU 😁 \n anterior estava R${euro_atual}\n'
+        # if euro_atual != 0 and euro_atual < float(valor):
+        #     cria_retorno = f'O EURO SUBIU 😓 \n anterior estava R${euro_atual}\n'
+        # elif euro_atual != 0 and euro_atual > float(valor):
+        #     cria_retorno = f'O EURO CAIU 😁 \n anterior estava R${euro_atual}\n'
             
-        euro_atual = float(valor)
-        cria_retorno += f"{data} - O Euro está R${valor}"
+        # euro_atual = float(valor)
+        cria_retorno = f"{data} - O Euro está R${valor}"
         return cria_retorno
     except Exception as e:
         return f"API de cotação retornou {response.status_code} - erro {e} \n por favor verifique"
