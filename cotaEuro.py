@@ -21,44 +21,28 @@ def esta_horario_comercial():
     return dia_util and horario_comercial
 
 async def cotacao_euro():
-    dt = date.today()
-    dt_str = dt.strftime('%m-%d-%Y')  # formato MM-DD-YYYY para o endpoint
-    # código da moeda EUR segundo o BCB – precisa confirmar (ex: 'EUR')
-    codigo_moeda = 'EUR'
-
-    url = (
-        f"https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/"
-        f"CotacaoMoedaPeriodoFechamento(codigoMoeda='{codigo_moeda}',"
-        f"dataInicialCotacao='{dt_str}',dataFinalCotacao='{dt_str}')"
-        f"?$select=cotacaoVenda,dataHoraCotacao"
-    )
-    # você pode optar por cotacaoCompra ou cotacaoVenda, dependendo do que quiser
-
+    url = f"https://api.fxratesapi.com/latest?api_key={API_TOKEN}&base=EUR&currencies=BRL&resolution=1h"
+    payload = {}
+    headers = {"User-Agent": "Mozilla/5.0 (TelegramBot/1.0)"}
+    response = requests.request("GET", url, headers=headers, data=payload)
+    
     try:
-        response = requests.get(url, headers={"User‑Agent": "Mozilla/5.0"})
-        response.raise_for_status()
-        data = response.json().get('value', [])
-        if not data:
-            return f"Nenhum dado retornado para {codigo_moeda} em {dt_str}"
-
-        registro = data[0]
-        cotacao = float(registro['cotacaoVenda'])  # ou cotacaoCompra
-        data_hora = registro['dataHoraCotacao']
-
+        responseJson = response.json()
+        valor = responseJson['rates']['BRL']
+        data = responseJson['date']
         cria_retorno = ''
-        global euro_atual
-        if euro_atual != 0.0 and euro_atual < cotacao:
-            cria_retorno = f'O EURO SUBIU 😓 \n anterior estava R${euro_atual:.4f}\n'
-        elif euro_atual != 0.0 and euro_atual > cotacao:
-            cria_retorno = f'O EURO CAIU 😁 \n anterior estava R${euro_atual:.4f}\n'
-
-        euro_atual = cotacao
-        cria_retorno += f"{data_hora} - O Euro está R${cotacao:.4f}"
+        
+        if euro_atual != 0 and euro_atual < float(valor):
+            cria_retorno = f'O EURO SUBIU 😓 \n anterior estava R${euro_atual}\n'
+        elif euro_atual != 0 and euro_atual > float(valor):
+            cria_retorno = f'O EURO CAIU 😁 \n anterior estava R${euro_atual}\n'
+            
+        euro_atual = float(valor)
+        cria_retorno += f"{date} - O Euro está R${valor}"
         return cria_retorno
-
-    except Exception as e:
-        return f"API BCB de cotação retornou erro: {e} ‑ status {response.status_code} ‑ {response.content}"
-
+    except: 
+        return f"API de cotação retornou {response.status_code} - {response.content}, por favor verifique"
+    
 async def callback_auto_message(context: ContextTypes.DEFAULT_TYPE):
     job = context.job
     horario_comercial = esta_horario_comercial()
