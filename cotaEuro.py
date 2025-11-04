@@ -38,10 +38,10 @@ async def cotacao_euro():
             cria_retorno = f'O EURO CAIU 😁 \n anterior estava R${euro_atual}\n'
             
         euro_atual = float(valor)
-        cria_retorno += f"{date} - O Euro está R${valor}"
+        cria_retorno += f"{data} - O Euro está R${valor}"
         return cria_retorno
-    except: 
-        return f"API de cotação retornou {response.status_code} - {response.content}, por favor verifique"
+    except Exception as e:
+        return f"API de cotação retornou {response.status_code} - erro {e} \n por favor verifique"
     
 async def callback_auto_message(context: ContextTypes.DEFAULT_TYPE):
     job = context.job
