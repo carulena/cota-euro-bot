@@ -60,13 +60,13 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     context.job_queue.run_repeating(
         callback_auto_message,
-        interval=3600,
+        interval=900,
         first=0,
         data=chat_id,
         name=str(chat_id)
     )
 
-    await update.message.reply_text("Bot iniciado! Enviarei mensagens a cada 1h (em dias e horários comerciais),")
+    await update.message.reply_text("Bot iniciado! Enviarei mensagens a cada 15 minutos (em dias e horários comerciais),")
 
 async def stop(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
