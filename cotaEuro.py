@@ -46,7 +46,7 @@ async def cotacao_euro():
 async def callback_auto_message(context: ContextTypes.DEFAULT_TYPE):
     job = context.job
     horario_comercial = esta_horario_comercial()
-    if(horario_comercial):
+    if(not(horario_comercial)):
         mensagem = await cotacao_euro()
         await context.bot.send_message(chat_id=job.data, text=mensagem)
 
