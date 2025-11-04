@@ -59,7 +59,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     context.job_queue.run_repeating(
         callback_auto_message,
-        interval=3600,
+        interval=30,
         first=0,
         data=chat_id,
         name=str(chat_id)
