@@ -7,6 +7,7 @@ import pytz
 from datetime import datetime
 from flask import Flask
 from datetime import date, timedelta
+from zoneinfo import ZoneInfo
 
 TOKEN = os.environ.get("COTA_EURO_TELEGRAM_TOKEN")
 
@@ -20,7 +21,7 @@ def esta_horario_comercial():
     return dia_util and horario_comercial
 
 async def cotacao_euro():
-    url = f"https://api.fxratesapi.com/latest?api_key={API_TOKEN}&base=EUR&currencies=BRL&resolution=1h"
+    url = f"https://api.fxratesapi.com/latest?api_key={API_TOKEN}&base=EUR&currencies=BRL&resolution=1m"
     payload = {}
     headers = {"User-Agent": "Mozilla/5.0 (TelegramBot/1.0)"}
     response = requests.request("GET", url, headers=headers, data=payload)
@@ -28,7 +29,8 @@ async def cotacao_euro():
     try:
         responseJson = response.json()
         valor = responseJson['rates']['BRL']
-        data = responseJson['date']
+        data = datetime.strptime(responseJson['date'], '%Y-%m-%dT%H:%M:%S.%fZ')
+        data_brasil = data.astimezone(ZoneInfo("America/Sao_Paulo"))
         # cria_retorno = ''
         
         # if euro_atual != 0 and euro_atual < float(valor):
@@ -37,9 +39,9 @@ async def cotacao_euro():
         #     cria_retorno = f'O EURO CAIU 😁 \n anterior estava R${euro_atual}\n'
             
         # euro_atual = float(valor)
-        cria_retorno = f"{data} - O Euro está R${valor}"
+        cria_retorno = f"{data_brasil} \n O Euro está R${valor:.2f}"
         return cria_retorno
-    except Exception as e:
+    except Exception as e:  
         return f"API de cotação retornou {response.status_code} - erro {e} \n por favor verifique"
     
 async def callback_auto_message(context: ContextTypes.DEFAULT_TYPE):
@@ -57,13 +59,13 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     context.job_queue.run_repeating(
         callback_auto_message,
-        interval=30,
+        interval=3600,
         first=0,
         data=chat_id,
         name=str(chat_id)
     )
 
-    await update.message.reply_text("Bot iniciado! Enviarei mensagens a cada 30 segundos. (em dias e horários comerciais)")
+    await update.message.reply_text("Bot iniciado! Enviarei mensagens a cada 1h (em dias e horários comerciais),")
 
 async def stop(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
@@ -75,7 +77,7 @@ async def stop(update: Update, context: ContextTypes.DEFAULT_TYPE):
     for job in jobs:
         job.schedule_removal()
 
-    await update.message.reply_text("Mensagens automáticas paradas.")
+    await update.message.reply_text("Ta bom, mas não se irrite 😓")
 
 def main():
     app = ApplicationBuilder().token(TOKEN).build()
