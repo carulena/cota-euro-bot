@@ -4,6 +4,7 @@ from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 import requests
 import pytz 
+import threading
 from datetime import datetime
 from flask import Flask
 from datetime import date, timedelta
@@ -79,7 +80,21 @@ async def stop(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await update.message.reply_text("Ta bom, mas não se irrite 😓")
 
+app_flask = Flask(__name__)
+
+
+@app_flask.route('/')
+def home():
+    return "Bot de cotação do Euro está rodando no Render!", 200
+
+def run_flask():
+    port = int(os.environ.get("PORT", 10000))
+    app_flask.run(host="0.0.0.0", port=port)
+
 def main():
+    threading.Thread(target=run_flask, daemon=True).start()
+    
+    
     app = ApplicationBuilder().token(TOKEN).build()
     
     app.bot.delete_webhook(drop_pending_updates=True)
