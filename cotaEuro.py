@@ -17,7 +17,7 @@ API_TOKEN  = os.environ.get("API_TOKEN")
 def esta_horario_comercial():
     brasil_tz = pytz.timezone("America/Sao_Paulo")
     agora = datetime.now(brasil_tz)
-    dia_util = agora.weekday() < 5
+    dia_util = agora.weekday() < 6
     horario_comercial = 8 <= agora.hour < 18
     return dia_util and horario_comercial
 
