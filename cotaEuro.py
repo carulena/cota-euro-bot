@@ -179,12 +179,6 @@ async def relatorio(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # Criar relatório
     df = gerar_relatorio(chat_id, context, dias)
 
-    if df is None or df.empty:
-        await update.message.reply_text(
-            f"📭 Não encontrei dados dos últimos {dias} dias."
-        )
-        return
-
     # Exemplo de métricas
     media = df["valor"].mean()
     minimo = df["valor"].min()
