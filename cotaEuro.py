@@ -16,7 +16,6 @@ TOKEN = os.environ.get("COTA_EURO_TELEGRAM_TOKEN")
 API_TOKEN  = os.environ.get("API_TOKEN")
 TZ_BRASIL = ZoneInfo("America/Sao_Paulo")
 
-
 def agora_brasil() -> datetime:
     return datetime.now(TZ_BRASIL)
 
