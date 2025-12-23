@@ -64,16 +64,20 @@ def deletaDados():
         
                 
 def criaRelatorio(dias, colecao):
-    agora = datetime.now(timezone.utc)
-    inicio = agora - timedelta(days=dias)
-    
-    resultados = db[colecao].find({
-        "dataHora": {
-            "$gte": inicio,
-            "$lte": agora
-        }
-    }).sort("data", 1)
-    return pd.DataFrame(list(resultados))
+    try:
+        agora = datetime.now(timezone.utc)
+        inicio = agora - timedelta(days=dias)
+        
+        resultados = db[colecao].find({
+            "dataHora": {
+                "$gte": inicio,
+                "$lte": agora
+            }
+        }).sort("data", 1)
+        return pd.DataFrame(list(resultados))
+    except Exception as e:
+        print("Erro de conexão:", e)
+        
     
         
 def colecao_tem_dados(colecao):

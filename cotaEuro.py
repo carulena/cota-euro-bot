@@ -46,21 +46,23 @@ def passa_dados_para_eurodia():
 
 
 async def gerar_relatorio(chat_id, context, dias):
-    if db.colecao_tem_dados("euroDia"):
-        df = db.criaRelatorio(dias, "euroDia")
-        db.gerar_grafico_euro(df)
-        buf = BytesIO()
-        plt.savefig(buf, format="png")
-        buf.seek(0)
-        
-        await context.bot.send_photo(
-            chat_id=chat_id,
-            photo=buf,
-            caption=f'Relatório referente aos ultimos {dias} dias'
-        )
-        
-        return df
-
+    try:
+        if db.colecao_tem_dados("euroDia"):
+            df = db.criaRelatorio(dias, "euroDia")
+            db.gerar_grafico_euro(df)
+            buf = BytesIO()
+            plt.savefig(buf, format="png")
+            buf.seek(0)
+            
+            await context.bot.send_photo(
+                chat_id=chat_id,
+                photo=buf,
+                caption=f'Relatório referente aos ultimos {dias} dias'
+            )
+            
+            return df
+    except Exception as e:
+        return f"❌ Erro ao buscar cotação: {e}"
 # =========================
 # API de cotação
 # =========================
@@ -162,36 +164,39 @@ async def relatorio(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "❗ Use assim: /relatorio <número_de_dias>\nExemplo: /relatorio 7"
         )
         return
+    try: 
+        try:
+            dias = int(context.args[0])
+            if dias <= 0:
+                raise ValueError
+        except ValueError:
+            await update.message.reply_text("❌ Informe um número inteiro válido de dias.")
+            return
 
-    try:
-        dias = int(context.args[0])
-        if dias <= 0:
-            raise ValueError
-    except ValueError:
-        await update.message.reply_text("❌ Informe um número inteiro válido de dias.")
-        return
+        # Verificar se há dados
+        if not db.colecao_tem_dados("euroHora"):
+            await update.message.reply_text("⚠️ Ainda não há dados suficientes.")
+            return
 
-    # Verificar se há dados
-    if not db.colecao_tem_dados("euroHora"):
-        await update.message.reply_text("⚠️ Ainda não há dados suficientes.")
-        return
+        # Criar relatório
+        df = await gerar_relatorio(chat_id, context, dias)
 
-    # Criar relatório
-    df = await gerar_relatorio(chat_id, context, dias)
+        # Exemplo de métricas
+        media = df["valor"].mean()
+        minimo = df["valor"].min()
+        maximo = df["valor"].max()
 
-    # Exemplo de métricas
-    media = df["valor"].mean()
-    minimo = df["valor"].min()
-    maximo = df["valor"].max()
-
-    mensagem = (
-        f"📊 *Relatório do Euro — últimos {dias} dias*\n\n"
-        f"📈 Máximo: R$ {maximo:.2f}\n"
-        f"📉 Mínimo: R$ {minimo:.2f}\n"
-        f"📊 Média: R$ {media:.2f}"
-    )
-    
-    await context.bot.send_message(chat_id=chat_id, text=mensagem)
+        mensagem = (
+            f"📊 *Relatório do Euro — últimos {dias} dias*\n\n"
+            f"📈 Máximo: R$ {maximo:.2f}\n"
+            f"📉 Mínimo: R$ {minimo:.2f}\n"
+            f"📊 Média: R$ {media:.2f}"
+        )
+        
+        await context.bot.send_message(chat_id=chat_id, text=mensagem)
+        
+    except Exception as e:
+        return f"❌ Erro ao buscar cotação: {e}"
 # =========================
 # Flask (healthcheck Render)
 # =========================

@@ -76,12 +76,15 @@ async def relatorio():
     
     try:
         dias = 7
+        print(dias)
+        
         if dias <= 0:
             raise ValueError
 
         # Criar relatório
         df = await gerar_relatorio('', '', dias)
-
+        if(df is None):
+            return
         # Exemplo de métricas
         media = df["valor"].mean()
         minimo = df["valor"].min()
@@ -97,9 +100,7 @@ async def relatorio():
     except Exception as e:
         return f"❌ Erro ao buscar cotação: {e}"
     # await context.bot.send_message(chat_id=chat_id, text=mensagem)
-async def main():
-    cotacao_euro()
-    await relatorio()
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    cotacao_euro()
+    asyncio.run(relatorio())
