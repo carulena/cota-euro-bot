@@ -62,7 +62,7 @@ async def gerar_relatorio(chat_id, context, dias, colecao):
             
             return df
     except Exception as e:
-        return f"❌ Erro ao buscar cotação: {e}"
+         return print(f"❌ Erro ao buscar cotação: {e}")
 # =========================
 # API de cotação
 # =========================
@@ -89,7 +89,7 @@ async def cotacao_euro() -> str:
 
 
     except Exception as e:
-        return f"❌ Erro ao buscar cotação: {e}"
+        return print(f"❌ Erro ao buscar cotação: {e}")
     
 # =========================
 # Jobs do Telegram
@@ -187,7 +187,7 @@ async def relatorio(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await context.bot.send_message(chat_id=chat_id, text=mensagem)
         
     except Exception as e:
-        return f"❌ Erro ao buscar cotação: {e}"
+        return print(f"❌ Erro ao buscar cotação: {e}")
     
     
 async def relatorio_dia(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -216,7 +216,7 @@ async def relatorio_dia(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await context.bot.send_message(chat_id=chat_id, text=mensagem)
         
     except Exception as e:
-        return f"❌ Erro ao buscar cotação: {e}"
+        return print(f"❌ Erro ao buscar cotação: {e}")
     
 # =========================
 # Flask (healthcheck Render)
