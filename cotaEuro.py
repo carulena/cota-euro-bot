@@ -78,20 +78,11 @@ async def cotacao_euro() -> str:
         data = response.json()
         valor = data["rates"]["BRL"]
 
-
-        # Data UTC da API
-        data_utc = datetime.strptime(
-        data["date"], "%Y-%m-%dT%H:%M:%S.%fZ"
-        ).replace(tzinfo=timezone.utc)
-
-
         # Converter apenas para exibição
-        data_brasil = data_utc.astimezone(TZ_BRASIL)
-
+        data_brasil = agora_brasil()
 
         # Persistência (salvar datetime, não string)
         db.insereDados(data_brasil, valor, "euroHora")
-
 
         data_exibicao = data_brasil.strftime("%d/%m/%Y - %H:%M")
         return f"{data_exibicao}\n💶 Euro: R$ {valor:.2f}"
