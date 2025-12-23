@@ -174,7 +174,7 @@ async def relatorio(update: Update, context: ContextTypes.DEFAULT_TYPE):
             return
 
         # Verificar se há dados
-        if not db.colecao_tem_dados("euroHora"):
+        if not db.colecao_tem_dados("euroDia"):
             await update.message.reply_text("⚠️ Ainda não há dados suficientes.")
             return
 
@@ -201,29 +201,14 @@ async def relatorio(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
 async def relatorio_hora(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
-
-    # Validar argumento
-    if not context.args:
-        await update.message.reply_text(
-            "❗ Use assim: /relatorio <número_de_horas>\nExemplo: /relatorio 7"
-        )
-        return
     try: 
-        try:
-            horas = int(context.args[0])
-            if horas <= 0:
-                raise ValueError
-        except ValueError:
-            await update.message.reply_text("❌ Informe um número inteiro válido de dias.")
-            return
-
         # Verificar se há dados
         if not db.colecao_tem_dados("euroHora"):
             await update.message.reply_text("⚠️ Ainda não há dados suficientes.")
             return
 
         # Criar relatório
-        df = await gerar_relatorio(chat_id, context, horas, 'euroHora')
+        df = await gerar_relatorio(chat_id, context, 1, 'euroHora')
 
         # Exemplo de métricas
         media = df["valor"].mean()
@@ -231,7 +216,7 @@ async def relatorio_hora(update: Update, context: ContextTypes.DEFAULT_TYPE):
         maximo = df["valor"].max()
 
         mensagem = (
-            f"📊 *Relatório do Euro — últimas {horas} horas*\n\n"
+            f"📊 *Relatório do Euro — no dia de hoje*\n\n"
             f"📈 Máximo: R$ {maximo:.2f}\n"
             f"📉 Mínimo: R$ {minimo:.2f}\n"
             f"📊 Média: R$ {media:.2f}"
