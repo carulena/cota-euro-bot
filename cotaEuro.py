@@ -199,7 +199,7 @@ async def relatorio(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return f"❌ Erro ao buscar cotação: {e}"
     
     
-async def relatorio_hora(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def relatorio_dia(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
     try: 
         # Verificar se há dados
@@ -252,7 +252,7 @@ def main():
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("stop", stop))
     app.add_handler(CommandHandler("relatorio", relatorio))
-    app.add_handler(CommandHandler("relatorioHora", relatorio_hora))
+    app.add_handler(CommandHandler("relatorio_dia", relatorio_dia))
 
     
     print("🤖 Bot rodando...")
