@@ -177,7 +177,7 @@ async def relatorio(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     # Criar relatório
-    df = gerar_relatorio(chat_id, context, dias)
+    df = await gerar_relatorio(chat_id, context, dias)
 
     # Exemplo de métricas
     media = df["valor"].mean()

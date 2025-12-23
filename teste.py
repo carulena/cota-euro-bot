@@ -1,4 +1,6 @@
 
+import asyncio
+from io import BytesIO
 import os
 import requests
 from datetime import datetime, timezone
@@ -53,9 +55,51 @@ def gerar_grafico_euro(df, caminho="euro.png"):
     
 TZ_BRASIL = ZoneInfo("America/Sao_Paulo")
 
-
+async def gerar_relatorio(chat_id, context, dias):
+    if db.colecao_tem_dados("euroDia"):
+        df = db.criaRelatorio(dias, "euroDia")
+        db.gerar_grafico_euro(df)
+        buf = BytesIO()
+        plt.savefig(buf, format="png")
+        buf.seek(0)
+        
+        # await context.bot.send_photo(
+        #     chat_id=chat_id,
+        #     photo=buf,
+        #     caption=f'Relatório referente aos ultimos {dias} dias'
+        # )
+        
+        return df
 def agora_brasil() -> datetime:
     return datetime.now(TZ_BRASIL)
+async def relatorio():
+    
+    try:
+        dias = 7
+        if dias <= 0:
+            raise ValueError
+
+        # Criar relatório
+        df = await gerar_relatorio('', '', dias)
+
+        # Exemplo de métricas
+        media = df["valor"].mean()
+        minimo = df["valor"].min()
+        maximo = df["valor"].max()
+
+        mensagem = (
+            f"📊 *Relatório do Euro — últimos {dias} dias*\n\n"
+            f"📈 Máximo: R$ {maximo:.2f}\n"
+            f"📉 Mínimo: R$ {minimo:.2f}\n"
+            f"📊 Média: R$ {media:.2f}"
+        )
+        print(mensagem)
+    except Exception as e:
+        return f"❌ Erro ao buscar cotação: {e}"
+    # await context.bot.send_message(chat_id=chat_id, text=mensagem)
+async def main():
+    cotacao_euro()
+    await relatorio()
 
 if __name__ == "__main__":
-    cotacao_euro()
+    asyncio.run(main())
