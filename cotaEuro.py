@@ -100,12 +100,9 @@ async def callback_auto_message(context: ContextTypes.DEFAULT_TYPE):
     job = context.job
 
 
-    if not esta_horario_comercial(job.data, context):
-        return
-
-
-    mensagem = await cotacao_euro()
-    await context.bot.send_message(chat_id=job.data, text=mensagem)
+    if esta_horario_comercial(job.data, context):
+        mensagem = await cotacao_euro()
+        await context.bot.send_message(chat_id=job.data, text=mensagem)
     
 # =========================
 # Comandos do Bot
