@@ -27,7 +27,7 @@ async def esta_horario_comercial(chat_id, context) -> bool:
         passa_dados_para_eurodia()
     # Sexta-feira às 18h → gerar relatório semanal
     if agora.weekday() == 4 and agora.hour == 18:
-        await gerar_relatorio(chat_id, context, 7)
+        await gerar_relatorio(chat_id, context, 7, 'euroDia')
     return dia_util and horario
 
 # =========================
@@ -45,10 +45,10 @@ def passa_dados_para_eurodia():
         db.deletaDados()
 
 
-async def gerar_relatorio(chat_id, context, dias):
+async def gerar_relatorio(chat_id, context, dias, colecao):
     try:
-        if db.colecao_tem_dados("euroDia"):
-            df = db.criaRelatorio(dias, "euroDia")
+        if db.colecao_tem_dados(colecao):
+            df = db.criaRelatorio(dias, colecao)
             db.gerar_grafico_euro(df)
             buf = BytesIO()
             plt.savefig(buf, format="png")
@@ -179,7 +179,7 @@ async def relatorio(update: Update, context: ContextTypes.DEFAULT_TYPE):
             return
 
         # Criar relatório
-        df = await gerar_relatorio(chat_id, context, dias)
+        df = await gerar_relatorio(chat_id, context, dias, 'euroDia')
 
         # Exemplo de métricas
         media = df["valor"].mean()
@@ -197,6 +197,51 @@ async def relatorio(update: Update, context: ContextTypes.DEFAULT_TYPE):
         
     except Exception as e:
         return f"❌ Erro ao buscar cotação: {e}"
+    
+    
+async def relatorio_hora(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    chat_id = update.effective_chat.id
+
+    # Validar argumento
+    if not context.args:
+        await update.message.reply_text(
+            "❗ Use assim: /relatorio <número_de_horas>\nExemplo: /relatorio 7"
+        )
+        return
+    try: 
+        try:
+            horas = int(context.args[0])
+            if horas <= 0:
+                raise ValueError
+        except ValueError:
+            await update.message.reply_text("❌ Informe um número inteiro válido de dias.")
+            return
+
+        # Verificar se há dados
+        if not db.colecao_tem_dados("euroHora"):
+            await update.message.reply_text("⚠️ Ainda não há dados suficientes.")
+            return
+
+        # Criar relatório
+        df = await gerar_relatorio(chat_id, context, horas, 'euroHora')
+
+        # Exemplo de métricas
+        media = df["valor"].mean()
+        minimo = df["valor"].min()
+        maximo = df["valor"].max()
+
+        mensagem = (
+            f"📊 *Relatório do Euro — últimas {horas} horas*\n\n"
+            f"📈 Máximo: R$ {maximo:.2f}\n"
+            f"📉 Mínimo: R$ {minimo:.2f}\n"
+            f"📊 Média: R$ {media:.2f}"
+        )
+        
+        await context.bot.send_message(chat_id=chat_id, text=mensagem)
+        
+    except Exception as e:
+        return f"❌ Erro ao buscar cotação: {e}"
+    
 # =========================
 # Flask (healthcheck Render)
 # =========================
@@ -222,6 +267,7 @@ def main():
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("stop", stop))
     app.add_handler(CommandHandler("relatorio", relatorio))
+    app.add_handler(CommandHandler("relatorioHora", relatorio_hora))
 
     
     print("🤖 Bot rodando...")
