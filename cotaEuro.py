@@ -21,12 +21,15 @@ def agora_brasil() -> datetime:
 
 async def esta_horario_comercial(chat_id, context) -> bool:
     agora = agora_brasil()
-    dia_util = agora.weekday() < 6 # seg–sab
+    dia_util = agora.weekday() < 5 # seg–sab
+    await context.bot.send_message(chat_id=chat_id, text=f"agora:{str(agora)}")
+    await context.bot.send_message(chat_id=chat_id, text=f"agora.hour:{str(agora.hour)}")
     horario = 8 <= agora.hour < 18
+    await context.bot.send_message(chat_id=chat_id, text=f"horario: {str(horario)}")
     if agora.hour == 18:
         passa_dados_para_eurodia()
-    # Sexta-feira às 18h → gerar relatório semanal
-    if agora.weekday() == 4 and agora.hour == 18:
+    # Sabado às 18h → gerar relatório semanal
+    if agora.weekday() == 5 and agora.hour == 18:
         await gerar_relatorio(chat_id, context, 7, 'euroDia')
     return dia_util and horario
 
@@ -99,8 +102,9 @@ async def cotacao_euro() -> str:
 async def callback_auto_message(context: ContextTypes.DEFAULT_TYPE):
     job = context.job
 
-
-    if esta_horario_comercial(job.data, context):
+    horario_comercial = esta_horario_comercial(job.data, context)
+    await context.bot.send_message(chat_id=job.data, text=f"horario_comercial: {horario_comercial}")
+    if horario_comercial:
         mensagem = await cotacao_euro()
         await context.bot.send_message(chat_id=job.data, text=mensagem)
     

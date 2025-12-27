@@ -100,7 +100,15 @@ async def relatorio():
     except Exception as e:
         return f"❌ Erro ao buscar cotação: {e}"
     # await context.bot.send_message(chat_id=chat_id, text=mensagem)
-
+def esta_horario_comercial() -> bool:
+    agora = agora_brasil()
+    dia_util = agora.weekday() < 6 # seg–sab
+    horario = 8 <= (agora.hour  + 3) < 18
+    return dia_util and horario
 if __name__ == "__main__":
-    cotacao_euro()
-    asyncio.run(relatorio())
+    # cotacao_euro()
+    agora = agora_brasil()
+    print(agora.weekday())
+    print(agora.hour)
+    
+    print(esta_horario_comercial())
