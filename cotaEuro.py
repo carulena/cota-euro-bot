@@ -112,7 +112,8 @@ async def callback_auto_message(context: ContextTypes.DEFAULT_TYPE):
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
 
-
+    mensagem = await cotacao_euro()
+    await context.bot.send_message(chat_id=job.data, text=mensagem)
     # Remove jobs existentes
     for job in context.job_queue.get_jobs_by_name(str(chat_id)):
         job.schedule_removal()
