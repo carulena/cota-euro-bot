@@ -53,12 +53,12 @@ async def gerar_relatorio(chat_id, context, dias, colecao):
             df = db.criaRelatorio(dias, colecao)
             db.gerar_grafico_euro(df)
             buf = BytesIO()
-            plt.savefig(buf, format="png")
+            
             buf.seek(0)
             
             await context.bot.send_photo(
                 chat_id=chat_id,
-                photo=buf,
+                photo=open('euro.png', 'rb'),
                 caption=f'Relatório referente aos ultimos {dias} dias'
             )
             
