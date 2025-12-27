@@ -24,6 +24,7 @@ async def esta_horario_comercial(chat_id, context) -> bool:
     dia_util = agora.weekday() < 5 # seg–sab
     horario = 8 <= agora.hour < 18
     if agora.hour == 18:
+        await context.bot.send_message(chat_id=chat_id, text="Enviando relatório diário para o banco de dados")
         passa_dados_para_eurodia()
     # Sabado às 18h → gerar relatório semanal
     if agora.weekday() == 5 and agora.hour == 18:
