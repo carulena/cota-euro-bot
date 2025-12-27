@@ -81,13 +81,10 @@ async def cotacao_euro() -> str:
         data = response.json()
         valor = data["rates"]["BRL"]
 
-        # Converter apenas para exibição
-        data_brasil = agora_brasil()
 
-        db.insereDados(data_brasil, valor, "euroHora")
+        db.insereDados(data, valor, "euroHora")
 
-        data_exibicao = data_brasil.strftime("%d/%m/%Y - %H:%M")
-        return f"{data_exibicao}\n💶 Euro: R$ {valor:.2f}"
+        return f"{data}\n💶 Euro: R$ {valor:.2f}"
 
 
     except Exception as e:

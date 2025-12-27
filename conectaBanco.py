@@ -4,7 +4,8 @@ from pymongo import MongoClient
 from datetime import datetime, timedelta, timezone
 import pandas as pd
 import matplotlib.pyplot as plt
-
+import matplotlib.ticker as mticker
+import matplotlib.dates as mdates
 URI = os.environ.get("URI_MONGO_DB")
 cliente = MongoClient(URI, serverSelectionTimeoutMS=5000)
 TZ_BRASIL = ZoneInfo("America/Sao_Paulo")
@@ -38,7 +39,7 @@ def criaColecao(nome):
     except Exception as e:
         print("Erro de conexão:", e)
         
-def insereDados(data, valor, colecao):
+def insereDados(data: datetime, valor, colecao):
     try: 
         cl = db[colecao]
         
@@ -81,15 +82,23 @@ def criaRelatorio(dias, colecao):
         print("Erro de conexão:", e)
         
 def gerar_grafico_euro(df, caminho="euro.png"):
-    plt.figure(figsize=(25, 5))
-    plt.plot(df["dataHora"].dt.strftime("%d/%m - %H:%M"), df["valor"])
+    df["dataHora"] = pd.to_datetime(df["dataHora"], utc=True, dayfirst=True)
+    df["dataHora"] = df["dataHora"].dt.tz_convert(TZ_BRASIL)
+    df["valor"] = pd.to_numeric(df["valor"]).round(3)
+    plt.figure(figsize=(20, 5))
+    plt.plot(df["dataHora"], df["valor"], marker="o")
+    ax = plt.gca() 
+    ax.xaxis.set_major_formatter(mdates.DateFormatter("%d/%m - %H:%M"))
+    plt.xticks(df["dataHora"], rotation=45)
     plt.xlabel("Data")
     plt.ylabel("Euro (R$)")
-    plt.title("Cotação do Euro (últimos 7 dias)")
+    plt.title(f"Cotação do Euro")
+    plt.gca().yaxis.set_major_formatter(mticker.FormatStrFormatter('%.2f'))
+    for x, y in zip(df["dataHora"], df["valor"]):
+        plt.annotate(f"R${y:.3f}", xy=(x, y), xytext=(0,5),textcoords="offset points", ha='center')
     plt.tight_layout()
     plt.savefig(caminho)
     plt.close()    
         
 def colecao_tem_dados(colecao):
-    print(db[colecao])
     return db[colecao].find_one() is not None
