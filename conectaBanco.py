@@ -1,11 +1,13 @@
 import os
+from zoneinfo import ZoneInfo
 from pymongo import MongoClient
 from datetime import datetime, timedelta, timezone
 import pandas as pd
+import matplotlib.pyplot as plt
 
 URI = os.environ.get("URI_MONGO_DB")
 cliente = MongoClient(URI, serverSelectionTimeoutMS=5000)
-
+TZ_BRASIL = ZoneInfo("America/Sao_Paulo")
 db = cliente['CotaEuro_servehope']
 
 def criaColecao(nome):
@@ -65,7 +67,7 @@ def deletaDados():
                 
 def criaRelatorio(dias, colecao):
     try:
-        agora = datetime.now(timezone.utc)
+        agora = datetime.now(TZ_BRASIL)
         inicio = agora - timedelta(days=dias)
         
         resultados = db[colecao].find({
@@ -78,7 +80,16 @@ def criaRelatorio(dias, colecao):
     except Exception as e:
         print("Erro de conexão:", e)
         
-    
+def gerar_grafico_euro(df, caminho="euro.png"):
+    plt.figure(figsize=(25, 5))
+    plt.plot(df["dataHora"].dt.strftime("%d/%m - %H:%M"), df["valor"])
+    plt.xlabel("Data")
+    plt.ylabel("Euro (R$)")
+    plt.title("Cotação do Euro (últimos 7 dias)")
+    plt.tight_layout()
+    plt.savefig(caminho)
+    plt.close()    
         
 def colecao_tem_dados(colecao):
+    print(db[colecao])
     return db[colecao].find_one() is not None

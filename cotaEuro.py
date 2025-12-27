@@ -22,10 +22,7 @@ def agora_brasil() -> datetime:
 async def esta_horario_comercial(chat_id, context) -> bool:
     agora = agora_brasil()
     dia_util = agora.weekday() < 5 # seg–sab
-    await context.bot.send_message(chat_id=chat_id, text=f"agora:{str(agora)}")
-    await context.bot.send_message(chat_id=chat_id, text=f"agora.hour:{str(agora.hour)}")
     horario = 8 <= agora.hour < 18
-    await context.bot.send_message(chat_id=chat_id, text=f"horario: {str(horario)}")
     if agora.hour == 18:
         passa_dados_para_eurodia()
     # Sabado às 18h → gerar relatório semanal
@@ -39,14 +36,16 @@ async def esta_horario_comercial(chat_id, context) -> bool:
 
 
 def passa_dados_para_eurodia():
-    if db.colecao_tem_dados("euroHora"):
-        df = db.criaRelatorio(1, "euroHora")
-        # Converter apenas para exibição
-        data_brasil = agora_brasil()
-        media = df["valor"].mean()
-        db.insereDados(data_brasil, media, "euroDia")
-        db.deletaDados()
-
+    try:
+        if db.colecao_tem_dados("euroHora"):
+            df = db.criaRelatorio(1, "euroHora")
+            # Converter apenas para exibição
+            data_brasil = agora_brasil()
+            media = df["valor"].mean()
+            db.insereDados(data_brasil, media, "euroDia")
+            db.deletaDados()
+    except Exception as e:
+         return print(f"❌ Erro ao buscar cotação: {e}")
 
 async def gerar_relatorio(chat_id, context, dias, colecao):
     try:
@@ -84,7 +83,6 @@ async def cotacao_euro() -> str:
         # Converter apenas para exibição
         data_brasil = agora_brasil()
 
-        # Persistência (salvar datetime, não string)
         db.insereDados(data_brasil, valor, "euroHora")
 
         data_exibicao = data_brasil.strftime("%d/%m/%Y - %H:%M")
@@ -102,8 +100,7 @@ async def cotacao_euro() -> str:
 async def callback_auto_message(context: ContextTypes.DEFAULT_TYPE):
     job = context.job
 
-    horario_comercial = esta_horario_comercial(job.data, context)
-    await context.bot.send_message(chat_id=job.data, text=f"horario_comercial: {horario_comercial}")
+    horario_comercial = await esta_horario_comercial(job.data, context)
     if horario_comercial:
         mensagem = await cotacao_euro()
         await context.bot.send_message(chat_id=job.data, text=mensagem)
