@@ -77,14 +77,15 @@ async def cotacao_euro() -> str:
         response = requests.get(url, headers=headers, timeout=10)
         response.raise_for_status()
 
-
         data = response.json()
         valor = data["rates"]["BRL"]
 
+        dataUTC = datetime.strptime(data['date'], '%Y-%m-%dT%H:%M:%S.%fZ').replace(tzinfo=timezone.utc)
+        
+        data_brasil = dataUTC.astimezone(TZ_BRASIL)
+        db.insereDados(data_brasil, valor, "euroHora")
 
-        db.insereDados(data, valor, "euroHora")
-
-        return f"{data}\n💶 Euro: R$ {valor:.2f}"
+        return f"{data_brasil.strftime('%d/%m/%y - %H:%M')}\n💶 Euro: R$ {valor:.2f}"
 
 
     except Exception as e:
